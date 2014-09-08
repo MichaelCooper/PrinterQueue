@@ -11,7 +11,7 @@ File Type: main driver file for the Printer queue
 
 #include <iostream>
 #include <string>
-#include "ReadyQueue.cpp"
+#include "ReadyQueue.h"
 
 using namespace std;
 
@@ -49,7 +49,7 @@ void testCase1()
   q1.insertProc(1);
   q1.insertProc(8);
   q1.insertProc(11);
-
+  q1.displayQueue();
   q1.removeHighestProc();
   q1.displayQueue();
 
@@ -57,9 +57,13 @@ void testCase1()
   q1.displayQueue();
 
   q1.insertProc(3);
+  q1.displayQueue();
   q1.insertProc(7);
+  q1.displayQueue();
   q1.insertProc(2);
+  q1.displayQueue();
   q1.insertProc(12);
+  q1.displayQueue();
   q1.insertProc(9);
 
   q1.removeHighestProc();

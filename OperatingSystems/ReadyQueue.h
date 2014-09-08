@@ -13,30 +13,29 @@ File Type: Header file for the Printer queue
 #include <iostream>
 #include <string>
 
+enum STATE { NEW, READY, RUNNING, WAITING, TERMINATED };
+
 struct PCB
 {
-  int priority;//gives the priority of the current task
-  int ID;
-  std::string state;//State of the task.
+	int ID; // The ID and id of the current task
+	STATE state;//State of the task.
 };
-
 
 class ReadyQueue
 {
 protected:
-        static const int qSIZE = 21;//used for max size
-	PCB PCBTable[20];
-	int totalSize;
+    static const int qSIZE = 21;//used for max size
+	static const int tableSize = 20;
+	int currentSize;
 	PCB Queue[qSIZE];//array of messages to be displayed
-	PCB blank;
-	PCB newPCB;
-	
-	int slot;//used to keep track the next empty slot in the array
+	PCB PCBTable[tableSize];
+	int nextSlot;//used to keep track the next empty nextSlot in the array
+
 public:
 	ReadyQueue();//constructor sets size = 0 and gives Queue it's size
 	~ReadyQueue(){};//destructor - Nothing to do here.
 	
-	void insertProc(int num);//sends in the new task to be added by its entry number
+	void insertProc(int ID);//sends in the new task to be added by its entry number
 	
 	PCB removeHighestProc();//removes and returns the front PCB
 
