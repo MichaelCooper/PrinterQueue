@@ -18,6 +18,7 @@ enum STATE { NEW, READY, RUNNING, WAITING, TERMINATED };
 struct PCB
 {
 	int ID; // The ID and id of the current task
+	int Priority; //The priority of the task in the queue
 	STATE state;//State of the task.
 };
 
