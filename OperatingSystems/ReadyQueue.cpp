@@ -17,88 +17,97 @@ using namespace std;
 //constructor sets position = 1 and gives Queue it's size
 ReadyQueue::ReadyQueue()
 {
-        totalSize = 0;
-
-        Queue[qSIZE];
-	slot = 1;//start at 1 in order to avoid the 0th slot. Makes division possible
-	
-	blank.state = "New";
-	blank.priority = -1;
-	blank.ID = 0;
-
-	for(int i = 0; i < qSIZE; i++)//initialize the array
+	currentSize = 0;
+	nextSlot = 1;//start at 1 in order to avoid the 0th nextSlot. Makes division possible
+	PCB blank;
+	blank.state = NEW;
+	blank.Priority = 50;//initialize to the lowest priority 
+	blank.ID = -1;//initialize to -1 for checks position check
+	for (int i = 0; i < qSIZE; i++)//initialize the array
+	{
 		Queue[i] = blank;
-
-	
-	newPCB.state = "New";
-
-	for(int j = 0; j < 19; j++)
-	  {
-	    newPCB.priority = j+1;
-	    newPCB.ID = j+1;
-	    PCBTable[j] = newPCB;
-	  }
-
+	}
+	for (int j = 0; j < tableSize; j++)
+	{
+		blank.ID = j + 1;
+		blank.Priority = j + 1;
+		PCBTable[j] = blank;
+	}
 }
 
 //sends in the new task to be added by its entry number
 void ReadyQueue::insertProc(int num)
 {
-  PCB toAdd = PCBTable[(num-1)]; 
+	PCB toAdd = PCBTable[(-1)]; //-1 to account for the 0th slot in the PCB table
 
-        toAdd.state = "Ready";
+	toAdd.state = READY;
 
 	//add the item
-	Queue[slot] = toAdd;
-	int location = slot;//starting location for the new item being added
-
-	//while the priority is higher than that of it's parent, swap the two
-	while((toAdd.priority < Queue[location / 2].priority) && (location != 1))
+	Queue[nextSlot] = toAdd;
+	int location = nextSlot;//starting location for the new item being added
+	cout << "inserting " << toAdd.ID << " into " << location << endl;
+	//while the ID is higher than that of it's parent, swap the two
+	while((toAdd.Priority < Queue[location / 2].Priority) && (location != 1))
 	{
-//echo		cout << "\nSwapping with the root." << endl;
+		cout << "\nSwapping with the root." << endl;
 		Queue[location] = Queue[location / 2];//swap the root
 		Queue[location / 2] = toAdd;
 		location = (location / 2);
 	}
-	slot++;//incriment the next empty slot
-	totalSize++;
+	nextSlot++;//incriment the next empty nextSlot
+	currentSize++;
 }
 
 
-//removes the front job and displays it's priority number
+//removes the front job and displays it's ID number
 PCB ReadyQueue::removeHighestProc()
 {
   PCB top = Queue[1];
-  Queue[1].state = "Running";
+  Queue[1].state = RUNNING;
+  cout << "Removing " << top.ID << endl;
+  for (int i = 1; i < currentSize; i++)
+  {
+	  Queue[i].Priority += -1;
+  }
   reHeapify();
-  totalSize--;
+  currentSize--;
   return top;
 }
 
 //re-Heapiy the array after a job has been printed.
 void ReadyQueue::reHeapify()
 {
-	slot--;//decriment slot because tree is shrinking by 1
-	Queue[1] = Queue[slot];//move the lowest data member to the top
-	Queue[slot].priority = -1;//reset priority for the last slot
-	Queue[slot].state = "Terminated";
+	/*
+	 * Still need to fix some of the references to .ID
+	 * Still need to change to pass by reference
+	 * For test 2, we may need to add a function that lets us change the priorities. Because it says pick from random priorities..
+	 * Let me know what you think.
+	 */
+
+	nextSlot--;//decriment nextSlot because tree is shrinking by 1
+	Queue[1] = Queue[nextSlot];//move the lowest data member to the top
+	Queue[nextSlot].Priority = -1;//reset ID for the last nextSlot
+	Queue[nextSlot].state = TERMINATED;
 	int loc = 1; //current location of the lase element in the array
 
-	while(loc != slot -1)//ensures that at most the item will return to the end
+	while(loc != nextSlot -1)//ensures that at most the item will return to the end
 	{
 		//insure that we don't fall off the tree
-		if(((loc * 2) > slot)||(Queue[loc*2].priority == -1))
+		if(((loc * 2) > nextSlot)||(Queue[loc*2].ID == -1))
 			return;
-		if((Queue[loc].priority > Queue[loc*2].priority) || 
-			(Queue[loc].priority > Queue[loc*2+1].priority))
+		if ((Queue[loc].ID > Queue[loc * 2].ID) ||
+			(Queue[loc].ID > Queue[loc * 2 + 1].ID))
 		{
 			PCB PCBHolder = Queue[loc];//pull the current message
-			//See which one has a higher priority and swap
-			if(Queue[loc*2].priority < Queue[loc*2+1].priority)
+			//See which one has a higher ID and swap
+			if (Queue[loc * 2].ID < Queue[(loc * 2) + 1].ID || Queue[(loc * 2)+1].ID == -1)
 			{
-				if(Queue[loc*2].priority == -1)
+				if (Queue[loc * 2].ID == -1 || Queue[loc * 2].ID > Queue[loc].ID)
 					return;
 				
+				cout << "\nSwapping " << Queue[loc].ID
+					<< " with the left child" << endl;
+
 				Queue[loc] = Queue[loc*2];
 				Queue[loc*2] = PCBHolder;
 				loc = (loc * 2);
@@ -106,8 +115,11 @@ void ReadyQueue::reHeapify()
 			}
 			else
 			{
-				if(Queue[(loc*2)+1].priority == -1)
+				if(Queue[(loc*2)+1].ID == -1)
 				  return;
+
+				cout << "\nSwapping " << Queue[loc].ID
+					<< " with the right child" << endl;
 				
 				Queue[loc] = Queue[loc*2+1];
 				Queue[loc*2+1] = PCBHolder;
@@ -117,23 +129,23 @@ void ReadyQueue::reHeapify()
 
 		}
 		else
-			return;//exit if at correct priority
+			return;//exit if at correct ID
 	}
 }
 
 int ReadyQueue::size()
 {
-  return totalSize;
+  return currentSize;
 }
 
 //displays everythign left in the queue.
 void ReadyQueue::displayQueue()
 {
-	cout << "\nThe queue contains: ";
+	cout << "\nThe queue contains: [";
 
-	for(int i = 1; i < slot; i++)
+	for(int i = 1; i < nextSlot; i++)
 	{
-	  cout << endl << Queue[i].ID << " " << Queue[i].priority << endl;
+	  cout << Queue[i].ID << " p=" << Queue[i].Priority << ", ";
 	}
 	cout << endl;
 }
