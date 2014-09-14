@@ -28,19 +28,19 @@ protected:
     static const int qSIZE = 21;//used for max size
 	static const int tableSize = 20;
 	int currentSize;
-	PCB Queue[qSIZE];//array of messages to be displayed
-	PCB PCBTable[tableSize];
+	PCB * Queue[qSIZE];//array of pointers to processes
+	PCB PCBTable[tableSize]; //all processes in the system
 	int nextSlot;//used to keep track the next empty nextSlot in the array
 
 public:
 	ReadyQueue();//constructor sets size = 0 and gives Queue it's size
 	~ReadyQueue(){};//destructor - Nothing to do here.
-	
-	void insertProc(int ID);//sends in the new task to be added by its entry number
-	
-	PCB removeHighestProc();//removes and returns the front PCB
 
-	void reHeapify();//re-Heapify the array after a job has been printed.
+	bool insertProc(int ID, bool randomPriority, bool messages);//sends in the new task to be added by its entry number, can toggle random priority
+	
+	PCB removeHighestProc(bool messages);//removes and returns the front PCB
+
+	void reHeapify(bool messages);//re-Heapify the array after a job has been printed.
 	
 	int size();//return the number of elements in queue
 
